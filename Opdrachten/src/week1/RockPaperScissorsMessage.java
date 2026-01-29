@@ -5,11 +5,17 @@ import framework.Message;
 public class RockPaperScissorsMessage implements Message {
 
 	private Item item;
-	
-	public RockPaperScissorsMessage(Item item) {
+	private int round;
+
+	public RockPaperScissorsMessage(Item item, int round) {
 		this.item = item;
+		this.round = round;
 	}
-	
+
+	public int getRound() {
+		return round;
+	}
+
 	public Item getItem() {
 		return item;
 	}
@@ -23,5 +29,9 @@ public class RockPaperScissorsMessage implements Message {
 		} else {
 			return "<scissors>";
 		}
+	}
+
+	public RockPaperScissorsMessage(Item item) {
+		this(item, 1); // Default to round 1 for backward compatibility
 	}
 }

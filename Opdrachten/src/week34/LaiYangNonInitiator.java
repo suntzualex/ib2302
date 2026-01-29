@@ -8,11 +8,11 @@ public class LaiYangNonInitiator extends LaiYangProcess {
 
 	@Override
 	public void init() {
-		// TODO
+		// Non-initiator does nothing on init
 	}
-	
+
 	@Override
 	public void receive(Message m, Channel c) throws IllegalReceiveException {
-		// TODO
+		super.receive(m, c);
 	}
 }

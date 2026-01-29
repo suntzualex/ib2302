@@ -20,16 +20,43 @@ public class GlobalTransitionSystem {
 
 	private Map<Configuration, Map<Event, Configuration>> transitions = new LinkedHashMap<>();
 	private Configuration initial;
-	
+
 	public boolean hasExecution(List<Configuration> sequence) {
-		// TODO
-		return false;
+		if (sequence == null || sequence.size() < 2) {
+			return false;
+		}
+		if (!sequence.get(0).equals(initial)) {
+			return false;
+		}
+		for (int i = 0; i < sequence.size() - 1; i++) {
+			Configuration from = sequence.get(i);
+			Configuration to = sequence.get(i + 1);
+			Map<Event, Configuration> outgoing = transitions.get(from);
+			if (outgoing == null) {
+				return false;
+			}
+			boolean found = false;
+			for (Configuration target : outgoing.values()) {
+				if (target.equals(to)) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				return false;
+			}
+		}
+		Configuration last = sequence.get(sequence.size() - 1);
+		if (transitions.containsKey(last)) {
+			return false;
+		}
+		return true;
 	}
-	
+
 	/*
 	 * -------------------------------------------------------------------------
 	 */
-	
+
 	@Override
 	public String toString() {
 		return toString(new LinkedHashMap<>());

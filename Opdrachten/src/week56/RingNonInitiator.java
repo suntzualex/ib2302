@@ -8,11 +8,21 @@ public class RingNonInitiator extends RingProcess {
 
 	@Override
 	public void init() {
-		// TODO
+		// Non-initiator starts active, does nothing until it receives a token
 	}
 
 	@Override
 	public void receive(Message m, Channel c) throws IllegalReceiveException {
-		// TODO
+		if (!(m instanceof TokenMessage)) {
+			throw new IllegalReceiveException();
+		}
+		if (hasReceivedToken(c)) {
+			throw new IllegalReceiveException();
+		}
+		markTokenReceived(c);
+		// Forward token to clockwise neighbor
+		send(new TokenMessage(), getClockwiseChannel());
+		// Become passive (finish)
+		done();
 	}
 }

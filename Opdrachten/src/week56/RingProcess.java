@@ -6,13 +6,29 @@ import framework.Message;
 
 public abstract class RingProcess extends WaveProcess {
 
-	@Override
-	public void init() {
-		// TODO
-	}
+    // Track if a token has been received from each incoming channel
+    private final java.util.Set<framework.Channel> receivedTokenFrom = new java.util.HashSet<>();
 
-	@Override
-	public void receive(Message m, Channel c) throws IllegalReceiveException {
-		// TODO
-	}
+    protected boolean hasReceivedToken(Channel c) {
+        return receivedTokenFrom.contains(c);
+    }
+
+    protected void markTokenReceived(Channel c) {
+        receivedTokenFrom.add(c);
+    }
+
+    protected Channel getClockwiseChannel() {
+        // There is only one outgoing channel in the ring
+        return getOutgoing().iterator().next();
+    }
+
+    @Override
+    public void init() {
+        // Default: do nothing, subclasses override
+    }
+
+    @Override
+    public void receive(Message m, Channel c) throws IllegalReceiveException {
+        // Default: do nothing, subclasses override
+    }
 }

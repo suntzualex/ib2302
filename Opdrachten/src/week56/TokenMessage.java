@@ -3,8 +3,8 @@ package week56;
 import framework.Message;
 
 public class TokenMessage implements Message {
-	
-	public TokenMessage() {};
+
+	public TokenMessage() {}
 
 	@Override
 	public String toString() {

@@ -8,11 +8,19 @@ public class LaiYangInitiator extends LaiYangProcess {
 
 	@Override
 	public void init() {
-		// TODO
+		if (!hasStarted()) {
+			startSnapshot();
+			recordLocalState();
+			sendMarkerMessages();
+			// Start recording on all incoming channels since this is self-initiated
+			for (Channel in : getIncoming()) {
+				startRecording(in);
+			}
+		}
 	}
-	
+
 	@Override
 	public void receive(Message m, Channel c) throws IllegalReceiveException {
-		// TODO
+		super.receive(m, c);
 	}
 }

@@ -1,5 +1,8 @@
 package week2;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -16,14 +19,72 @@ public class CausalOrder {
 	}
 
 	public CausalOrder(List<Event> sequence) {
-		// TODO
+		// Build causal pairs from the sequence
+		// 1. Process order: for each process, add (e_i, e_{i+1})
+		Map<framework.Process, Event> lastEvent = new LinkedHashMap<>();
+		Map<String, Event> sendEvents = new LinkedHashMap<>();
+		for (Event e : sequence) {
+			// Process order
+			framework.Process proc = e.getProcess();
+			if (lastEvent.containsKey(proc)) {
+				addPair(lastEvent.get(proc), e);
+			}
+			lastEvent.put(proc, e);
+			// Message order: send -> receive
+			if (e instanceof SendEvent) {
+				SendEvent se = (SendEvent) e;
+				sendEvents.put(se.getChannel().toString() + ":" + se.getMessage().toString(), e);
+			} else if (e instanceof ReceiveEvent) {
+				ReceiveEvent re = (ReceiveEvent) e;
+				String key = re.getChannel().toString() + ":" + re.getMessage().toString();
+				if (sendEvents.containsKey(key)) {
+					addPair(sendEvents.get(key), e);
+				}
+			}
+		}
 	}
 
 	public Set<List<Event>> toComputation(Set<Event> events) {
-		// TODO
-		return null;
+		// Return all total orders consistent with the pairs (topological sorts)
+		List<Event> eventList = new ArrayList<>(events);
+		Set<List<Event>> result = new LinkedHashSet<>();
+		boolean[] used = new boolean[eventList.size()];
+		List<Event> current = new ArrayList<>();
+		Map<Event, Set<Event>> before = new HashMap<>();
+		for (Pair p : pairs) {
+			before.computeIfAbsent(p.getRight(), k -> new HashSet<>()).add(p.getLeft());
+		}
+		backtrack(eventList, used, current, before, result);
+		return result;
 	}
-	
+
+	private void backtrack(List<Event> eventList, boolean[] used, List<Event> current, Map<Event, Set<Event>> before, Set<List<Event>> result) {
+		if (current.size() == eventList.size()) {
+			result.add(new ArrayList<>(current));
+			return;
+		}
+		for (int i = 0; i < eventList.size(); i++) {
+			if (used[i]) continue;
+			Event e = eventList.get(i);
+			boolean canUse = true;
+			if (before.containsKey(e)) {
+				for (Event pre : before.get(e)) {
+					if (!current.contains(pre)) {
+						canUse = false;
+						break;
+					}
+				}
+			}
+			if (canUse) {
+				used[i] = true;
+				current.add(e);
+				backtrack(eventList, used, current, before, result);
+				current.remove(current.size() - 1);
+				used[i] = false;
+			}
+		}
+	}
+
 	/*
 	 * -------------------------------------------------------------------------
 	 */

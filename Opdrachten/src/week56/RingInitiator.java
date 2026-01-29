@@ -8,11 +8,20 @@ public class RingInitiator extends RingProcess {
 
 	@Override
 	public void init() {
-		// TODO
+		// Initiator starts active and sends one token to its clockwise neighbor
+		send(new TokenMessage(), getClockwiseChannel());
 	}
 
 	@Override
 	public void receive(Message m, Channel c) throws IllegalReceiveException {
-		// TODO
+		if (!(m instanceof TokenMessage)) {
+			throw new IllegalReceiveException();
+		}
+		if (hasReceivedToken(c)) {
+			throw new IllegalReceiveException();
+		}
+		markTokenReceived(c);
+		// On first valid token, become passive (finish)
+		done();
 	}
 }

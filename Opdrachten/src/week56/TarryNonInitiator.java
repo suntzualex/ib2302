@@ -8,11 +8,36 @@ public class TarryNonInitiator extends TarryProcess {
 
 	@Override
 	public void init() {
-		// TODO
+		// Non-initiator: do nothing until token received
 	}
 
 	@Override
 	public void receive(Message m, Channel c) throws IllegalReceiveException {
-		// TODO
+		if (!(m instanceof TokenMessage)) {
+			throw new IllegalReceiveException();
+		}
+		if (isPassive()) {
+			throw new IllegalReceiveException();
+		}
+		if (hasReceivedFrom(c)) {
+			throw new IllegalReceiveException();
+		}
+
+		markReceivedFrom(c);
+		if (getParent() == null) {
+			setParent(c);
+		}
+
+		// Use the same logic as TarryInitiator for consistency
+		Channel toSend = pickUnsentNeighbor();
+		if (toSend != null) {
+			send(new TokenMessage(), toSend);
+			markSentTo(toSend);
+		}
+
+		// Check if all neighbors have sent tokens to us - if so, we're done
+		if (allNeighborsReceived()) {
+			done();
+		}
 	}
 }
