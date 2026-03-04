@@ -68,24 +68,23 @@ public class DepthFirstSearchExtraControlNonInitiator extends DepthFirstSearchEx
 				// Pick child
 				currentChild = pickChild();
 
-				if (currentChild != null) {
-					// Send INFO to all neighbors except parent and chosen child
-					for (Channel out : getOutgoing()) {
-						boolean isParent = out.getReceiver().getName().equals(parent.getSender().getName());
-						if (!isParent && !out.equals(currentChild)) {
-							send(new InfoMessage(), out);
-							markSentInfo(out);
-							addPendingAck(out);
-						}
+				// Always send INFO to all neighbors except parent and chosen child
+				for (Channel out : getOutgoing()) {
+					boolean isParent = out.getReceiver().getName().equals(parent.getSender().getName());
+					boolean isChild = (currentChild != null && out.equals(currentChild));
+					if (!isParent && !isChild) {
+						send(new InfoMessage(), out);
+						markSentInfo(out);
+						addPendingAck(out);
 					}
+				}
 
-					// If no INFO to send, forward token immediately
-					if (allAcksReceived()) {
-						send(new TokenMessage(), currentChild);
-						markSentToken(currentChild);
-					}
-				} else {
-					// No child available, return to parent and finish immediately
+				// If we have a child and got all ACKs, send token to child
+				if (currentChild != null && allAcksReceived()) {
+					send(new TokenMessage(), currentChild);
+					markSentToken(currentChild);
+				} else if (currentChild == null && allAcksReceived()) {
+					// No child available but got all ACKs, return to parent
 					String parentName = parent.getSender().getName();
 					Channel outToParent = findOutgoingTo(parentName);
 					if (outToParent != null) {
